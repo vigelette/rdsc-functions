@@ -5,12 +5,12 @@ module.exports = async function (context, myTimer) {
     var timeStamp = new Date().toISOString();
     
     rest.stocks.lastQuoteForSymbol("MSFT").then((value) => {
-        console.log(value);
+        context.log(value);
         // expected output: "Success!"
         if(value.status === 'success'){
             let unix_timestamp = value.last.timestamp;
             let date = new Date(unix_timestamp);
-            console.log(date.toLocaleString());
+            context.log(date.toLocaleString());
         }
     });
 
