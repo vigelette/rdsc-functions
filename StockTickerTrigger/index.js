@@ -6,14 +6,11 @@ module.exports = async function (context, myTimer) {
     const rest = polygon.restClient("AKWS84KBJKLLG5N1H825");     
     let tickerList = ['AAPL','MSFT'];
     for (const idx in tickerList) {
-        context.log(tickerList[idx].symbol);
-        await rest.stocks.lastQuoteForSymbol(tickerList[idx].symbol).then((value) => {
+        context.log(tickerList[idx]);
+        await rest.stocks.lastQuoteForSymbol(tickerList[idx]).then((value) => {
             // expected output: "Success!"
             if(value.status === 'success'){
-                let result = insertData(value)
-                if(result){
-                    context.log("success");
-                }
+                context.log(value)
             }});
     }
     
