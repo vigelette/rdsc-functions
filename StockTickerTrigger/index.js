@@ -3,16 +3,24 @@
 module.exports = async function (context, myTimer) {
     let timeStamp = new Date().toISOString();
     
-    let rest = polygon.restClient("AKWS84KBJKLLG5N1H825");
-    rest.stocks.lastQuoteForSymbol("MSFT").then((value) => {
-        context.log(value);
-        // expected output: "Success!"
-        if(value.status === 'success'){
-            let unix_timestamp = value.last.timestamp;
-            let date = new Date(unix_timestamp);
-            context.log(date.toLocaleString());
-        }
-    });
+    const rest = polygon.restClient("AKWS84KBJKLLG5N1H825");     
+    let tickerList = ['AAPL','MSFT'];
+    for (const idx in tickerList) {
+        context.log(tickerList[idx].symbol);
+        await rest.stocks.lastQuoteForSymbol(tickerList[idx].symbol).then((value) => {
+            // expected output: "Success!"
+            if(value.status === 'success'){
+                let result = insertData(value)
+                if(result){
+                    context.log("success");
+                }
+            }});
+    }
+    
+    if(bTimerEnabled){
+        mTimeoutFunc = setTimeout(this.timerFunc, iTimerInterval, ctx);
+    }
+
 
     if (myTimer.IsPastDue)
     {
