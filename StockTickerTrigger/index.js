@@ -1,9 +1,9 @@
 ﻿const polygon = require('polygon.io');
-const rest = polygon.restClient("AKWS84KBJKLLG5N1H825");
 
 module.exports = async function (context, myTimer) {
-    var timeStamp = new Date().toISOString();
+    let timeStamp = new Date().toISOString();
     
+    let rest = polygon.restClient("AKWS84KBJKLLG5N1H825");
     rest.stocks.lastQuoteForSymbol("MSFT").then((value) => {
         context.log(value);
         // expected output: "Success!"
