@@ -17,10 +17,6 @@ module.exports = async function (context, myTimer) {
             }});
     }
     
-    if(bTimerEnabled){
-        mTimeoutFunc = setTimeout(this.timerFunc, iTimerInterval, ctx);
-    }
-
 
     if (myTimer.IsPastDue)
     {
