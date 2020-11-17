@@ -8,7 +8,7 @@ const account = process.env.ACCOUNT_NAME
 const accountKey = process.env.ACCOUNT_KEY 
 const polygon_apiKey = process.env.POLYGON_API_KEY 
 
-function getPromise(s, d) {
+function getPromise(context, s, d) {
 	return new Promise((resolve, reject) => {
     context.log(`https://api.polygon.io/v2/ticks/stocks/trades/${s}/${d}?apiKey=${polygon_apiKey}`);
     https.get(`https://api.polygon.io/v2/ticks/stocks/trades/${s}/${d}?apiKey=${polygon_apiKey}`, (resp) => {
@@ -120,7 +120,7 @@ module.exports = async function (context, req) {
       
           if(!blobExists){
             context.log('Downloading data for blob');
-            let http_promise = getPromise(tickerSymbol, qDate);
+            let http_promise = getPromise(context, tickerSymbol, qDate);
             let response_body = await http_promise;
             let obj_result = JSON.parse(response_body);
       
