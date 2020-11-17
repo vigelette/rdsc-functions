@@ -147,6 +147,6 @@ module.exports = async function (context, req) {
 
     context.res = {
         status: _status, 
-        body: responseMessage
+        body: _responseMessage
     };
 }
