@@ -6,11 +6,12 @@ const { BlobServiceClient, StorageSharedKeyCredential } = require("@azure/storag
 const DATE_FORMAT= 'YYYY-MM-DD';
 const account = process.env.ACCOUNT_NAME 
 const accountKey = process.env.ACCOUNT_KEY 
+const polygon_apiKey = process.env.POLYGON_API_KEY 
 
 function getPromise(s, d) {
 	return new Promise((resolve, reject) => {
-    context.log(`https://api.polygon.io/v2/ticks/stocks/trades/${s}/${d}?apiKey=${APIKEY}`);
-    https.get(`https://api.polygon.io/v2/ticks/stocks/trades/${s}/${d}?apiKey=${APIKEY}`, (resp) => {
+    context.log(`https://api.polygon.io/v2/ticks/stocks/trades/${s}/${d}?apiKey=${polygon_apiKey}`);
+    https.get(`https://api.polygon.io/v2/ticks/stocks/trades/${s}/${d}?apiKey=${polygon_apiKey}`, (resp) => {
       context.log('statusCode:', resp.statusCode);
       context.log('headers:', resp.headers);
       let stock_data = [];
@@ -78,7 +79,7 @@ module.exports = async function (context, req) {
         // create necessary clients
         context.log("Creating clients");
         const sharedKeyCredential = new StorageSharedKeyCredential(account, accountKey);
-        const rest = polygon.restClient(APIKEY);
+        const rest = polygon.restClient(polygon_apiKey);
 
         // List containers
         const blobServiceClient = new BlobServiceClient(
