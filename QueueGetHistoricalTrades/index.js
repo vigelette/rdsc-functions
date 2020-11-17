@@ -39,4 +39,111 @@ function getPromise(context, s, d) {
 
 module.exports = async function (context, myQueueItem) {
     context.log('JavaScript queue trigger function processed work item', myQueueItem);
+    
+    // local vars
+    let i = 0;
+    let passParams = true;
+    let start_date = undefined;
+    let end_date = undefined;
+    let curr_date = undefined;
+    let _responseMessage = "";
+    let _status = 200;
+    context.log('Azure account ' + account);
+
+    const tickerSymbol = myQueueItem.ticker;
+    const startDate = myQueueItem.start;
+    const endDate = myQueueItem.end;
+
+    // validate parameters first
+    
+    context.log("Validating dates");
+    start_date = moment(startDate, DATE_FORMAT, true);
+    if(!start_date.isValid()){
+        context.log("Invalid start day");
+        passParams = false;
+    }
+
+    end_date = moment(endDate, DATE_FORMAT, true);
+    if(!end_date.isValid()){
+        context.log("Invalid end day");
+        passParams = false;
+    }
+
+    let days = end_date.diff(start_date, 'days');
+    if(days < 0){
+        context.log("start day must be less than or equal to the end day");
+        passParams = false;
+    }
+
+    if(passParams){
+        // create necessary clients
+        context.log("Creating clients");
+        const sharedKeyCredential = new StorageSharedKeyCredential(account, accountKey);
+        const rest = polygon.restClient(polygon_apiKey);
+
+        // List containers
+        const blobServiceClient = new BlobServiceClient(
+            // When using AnonymousCredential, following url should include a valid SAS or support public access
+            `https://${account}.blob.core.windows.net`,
+            sharedKeyCredential
+        );
+
+        // start processing
+        context.log('Days to Process: ' + days + 1);
+        curr_date = start_date; // set start date
+
+        
+        context.log("Processing Begins");
+        do {
+          i++; // track day count
+          // extract information from current date to process
+          let qDate = curr_date.format(DATE_FORMAT);
+          let qYear = curr_date.format('YYYY');
+          let qMonth = curr_date.format('MM');
+          let qDay = curr_date.format('DD');
+        
+          const label = qDate.replace(/\-/g, '');
+          let containerName = `master-data-store`;    
+          let blobName = `stocks/trades/${tickerSymbol}/${qYear}/${qMonth}/${qDay}/${tickerSymbol}_${label}.json`;
+          
+          context.log(containerName);
+          const containerClient = blobServiceClient.getContainerClient(containerName);
+          const containerExists = await containerClient.exists();
+      
+          if(!containerExists){
+            const createContainerResponse = await containerClient.create();
+            context.log(`Create container ${containerName} successfully`, createContainerResponse.requestId);
+          }
+      
+          const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+          const blobExists = await blockBlobClient.exists();
+      
+          if(!blobExists){
+            context.log('Downloading data for blob');
+            let http_promise = getPromise(context, tickerSymbol, qDate);
+            let response_body = await http_promise;
+            let obj_result = JSON.parse(response_body);
+      
+            if(obj_result.success){
+              const content = JSON.stringify(obj_result.results);
+              const uploadBlobResponse = await blockBlobClient.upload(content, Buffer.byteLength(content));
+              context.log(`Upload block blob ${blobName} successfully`, uploadBlobResponse.requestId);
+            }
+          }else{
+            context.log('blob already exists');
+          }
+          curr_date = curr_date.add(1,'days');
+        }while(curr_date<=end_date);
+        
+        context.log("Days Processed: " + i);
+        _responseMessage = "Processed " + i + " days of data for " + tickerSymbol;
+            
+    }else{
+        _status = 501;
+        _responseMessage = "Failed to process symbol and dates asked.";
+
+    }
+    
+    context.log(_responseMessage);
+
 };
