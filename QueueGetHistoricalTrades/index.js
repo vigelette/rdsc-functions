@@ -156,7 +156,7 @@ module.exports = async function (context, myQueueItem) {
 
     }
     
-    context.log("Status: " + _status + "Message: " + _responseMessage);
+    context.log("Status: " + _status + " Message: " + _responseMessage);
     let end = moment(new Date(), 'YYYY-MM-DD HH:mm:ss'); 
     let duration = moment.utc(end.diff(start)).format("HH:mm:ss.SSS");
     context.log("execution time: " + duration);
