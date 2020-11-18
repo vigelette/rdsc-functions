@@ -9,8 +9,8 @@ const accountKey = process.env.ACCOUNT_KEY
 const polygon_apiKey = process.env.POLYGON_API_KEY 
 
 function getPromise(context, s, d) {
+  context.log(`https://api.polygon.io/v2/ticks/stocks/trades/${s}/${d}?apiKey=${polygon_apiKey}`);
 	return new Promise((resolve, reject) => {
-    context.log(`https://api.polygon.io/v2/ticks/stocks/trades/${s}/${d}?apiKey=${polygon_apiKey}`);
     https.get(`https://api.polygon.io/v2/ticks/stocks/trades/${s}/${d}?apiKey=${polygon_apiKey}`, (resp) => {
       // context.log('statusCode:', resp.statusCode);
       // context.log('headers:', resp.headers);
@@ -121,7 +121,7 @@ module.exports = async function (context, myQueueItem) {
       
           if(!blobExists){
             //context.log('Downloading data for blob');
-            let http_promise = getPromise(console, tickerSymbol, qDate);
+            let http_promise = getPromise(context, tickerSymbol, qDate);
             let response_body = await http_promise;
             try{
                 let obj_result = JSON.parse(response_body);
@@ -136,7 +136,7 @@ module.exports = async function (context, myQueueItem) {
                 }
 
             }catch(err){
-              context.log("===================== START HARD ERROR =====================");
+                context.log("===================== START HARD ERROR =====================");
                 context.log(err)
                 context.log("===================== END HARD ERROR =====================");
             }
