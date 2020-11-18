@@ -108,7 +108,7 @@ module.exports = async function (context, myQueueItem) {
           let containerName = `master-data-store`;    
           let blobName = `stocks/trades/${tickerSymbol}/${qYear}/${qMonth}/${qDay}/${tickerSymbol}_${label}.json`;
           
-          context.log(containerName);
+          // context.log(containerName);
           const containerClient = blobServiceClient.getContainerClient(containerName);
           const containerExists = await containerClient.exists();
       
@@ -125,14 +125,14 @@ module.exports = async function (context, myQueueItem) {
             let http_promise = getPromise(context, tickerSymbol, qDate);
             let obj_result = undefined;
             http_promise.then(function(result) {
+              // set the result
               obj_result = JSON.parse(result);
-
             }, function(err) {
               context.log("===================== START HARD ERROR =====================");
               context.log(err);
               context.log("===================== END HARD ERROR =====================");
               // need to handle it here
-            })
+            });
             
             if(obj_result != undefined){
               if(obj_result.success){
