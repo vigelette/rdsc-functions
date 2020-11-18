@@ -12,8 +12,8 @@ function getPromise(context, s, d) {
 	return new Promise((resolve, reject) => {
     context.log(`https://api.polygon.io/v2/ticks/stocks/trades/${s}/${d}?apiKey=${polygon_apiKey}`);
     https.get(`https://api.polygon.io/v2/ticks/stocks/trades/${s}/${d}?apiKey=${polygon_apiKey}`, (resp) => {
-      context.log('statusCode:', resp.statusCode);
-      context.log('headers:', resp.headers);
+      // context.log('statusCode:', resp.statusCode);
+      // context.log('headers:', resp.headers);
       let stock_data = [];
   
       // A chunk of data has been recieved.
@@ -28,6 +28,7 @@ function getPromise(context, s, d) {
       });
   
       resp.on("error", (err) => {
+        context.log("Error", err);
         reject(err);
       });
 
@@ -49,7 +50,7 @@ module.exports = async function (context, myQueueItem) {
     let curr_date = undefined;
     let _responseMessage = "";
     let _status = 200;
-    context.log('Azure account ' + account);
+    // context.log('Azure account ' + account);
 
     const tickerSymbol = myQueueItem.ticker;
     const startDate = myQueueItem.start;
@@ -57,7 +58,7 @@ module.exports = async function (context, myQueueItem) {
 
     // validate parameters first
     
-    context.log("Validating dates");
+    // context.log("Validating dates");
     start_date = moment(startDate, DATE_FORMAT, true);
     if(!start_date.isValid()){
         context.log("Invalid start day");
@@ -78,7 +79,7 @@ module.exports = async function (context, myQueueItem) {
 
     if(passParams){
         // create necessary clients
-        context.log("Creating clients");
+        // context.log("Creating clients");
         const sharedKeyCredential = new StorageSharedKeyCredential(account, accountKey);
         const rest = polygon.restClient(polygon_apiKey);
 
@@ -90,11 +91,11 @@ module.exports = async function (context, myQueueItem) {
         );
 
         // start processing
-        context.log('Days to Process: ' + days + 1);
+        context.log('Days to Process: ' + days);
         curr_date = start_date; // set start date
 
         
-        context.log("Processing Begins");
+        // context.log("Processing Begins");
         do {
           i++; // track day count
           // extract information from current date to process
@@ -113,14 +114,14 @@ module.exports = async function (context, myQueueItem) {
       
           if(!containerExists){
             const createContainerResponse = await containerClient.create();
-            context.log(`Create container ${containerName} successfully`, createContainerResponse.requestId);
+            // context.log(`Create container ${containerName} successfully`, createContainerResponse.requestId);
           }
       
           const blockBlobClient = containerClient.getBlockBlobClient(blobName);
           const blobExists = await blockBlobClient.exists();
       
           if(!blobExists){
-            context.log('Downloading data for blob');
+            //context.log('Downloading data for blob');
             let http_promise = getPromise(context, tickerSymbol, qDate);
             let response_body = await http_promise;
             let obj_result = JSON.parse(response_body);
@@ -133,12 +134,12 @@ module.exports = async function (context, myQueueItem) {
 
             }
           }else{
-            context.log(`blob ${tickerSymbol} already exists`);
+            // context.log(`blob ${tickerSymbol} already exists`);
           }
           curr_date = curr_date.add(1,'days');
         }while(curr_date<=end_date);
         
-        context.log("Days Processed: " + i);
+        // context.log("Days Processed: " + i);
         _responseMessage = "Processed " + i + " days of data for " + tickerSymbol;
             
     }else{
