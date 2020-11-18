@@ -39,7 +39,7 @@ function getPromise(context, s, d) {
 
 module.exports = async function (context, myQueueItem) {
     context.log('JavaScript queue trigger function processed work item', myQueueItem);
-    var start =  moment(new Date().getTime(), 'YYYY-MM-DD HH:mm:ss'); 
+    const start =  moment(new Date(), 'YYYY-MM-DD HH:mm:ss'); 
 
     // local vars
     let i = 0;
@@ -148,8 +148,8 @@ module.exports = async function (context, myQueueItem) {
     }
     
     context.log(_responseMessage);
-    var end = moment(new Date().getTime(), 'YYYY-MM-DD HH:mm:ss'); 
-    var duration = moment.utc(end.diff(start)).format("HH:mm:ss.SSS");
+    let end = moment(new Date(), 'YYYY-MM-DD HH:mm:ss'); 
+    let duration = moment.utc(end.diff(start)).format("HH:mm:ss.SSS");
     context.log("execution time: " + duration);
 
     context.done();
