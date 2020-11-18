@@ -147,5 +147,6 @@ module.exports = async function (context, myQueueItem) {
     }
     
     context.log(_responseMessage);
+    context.done();
 
 };
