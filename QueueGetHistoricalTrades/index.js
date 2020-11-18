@@ -123,15 +123,9 @@ module.exports = async function (context, myQueueItem) {
           if(!blobExists){
             //context.log('Downloading data for blob');
             let http_promise = getPromise(context, tickerSymbol, qDate);
+            let obj_result = undefined;
             http_promise.then(function(result) {
-              let obj_result = JSON.parse(result);
-              if(obj_result.success){
-                const content = JSON.stringify(obj_result.results);
-                const uploadBlobResponse = await blockBlobClient.upload(content, Buffer.byteLength(content));
-                context.log(`Upload ${tickerSymbol} block blob successfully`, uploadBlobResponse.requestId);
-              }else{
-                context.log(obj_result);    
-              }
+              obj_result = JSON.parse(result);
 
             }, function(err) {
               context.log("===================== START HARD ERROR =====================");
@@ -140,6 +134,15 @@ module.exports = async function (context, myQueueItem) {
               // need to handle it here
             })
             
+            if(obj_result != undefined){
+              if(obj_result.success){
+                const content = JSON.stringify(obj_result.results);
+                const uploadBlobResponse = await blockBlobClient.upload(content, Buffer.byteLength(content));
+                context.log(`Upload ${tickerSymbol} block blob successfully`, uploadBlobResponse.requestId);
+              }else{
+                context.log(obj_result);    
+              }
+            }
       
           }else{
             // context.log(`blob ${tickerSymbol} already exists`);
