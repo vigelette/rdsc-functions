@@ -28,7 +28,6 @@ function getPromise(context, s, d) {
       });
   
       resp.on("error", (err) => {
-        context.log("Error", err);
         reject(err);
       });
 
@@ -122,28 +121,25 @@ module.exports = async function (context, myQueueItem) {
       
           if(!blobExists){
             //context.log('Downloading data for blob');
-            let http_promise = getPromise(context, tickerSymbol, qDate);
-            let obj_result = undefined;
-            http_promise.then(function(result) {
-              // set the result
-              obj_result = JSON.parse(result);
-            }, function(err) {
+            let http_promise = getPromise(console, tickerSymbol, qDate);
+            let response_body = await http_promise;
+            try{
+                let obj_result = JSON.parse(response_body);
+                if(obj_result.success){
+                    const content = JSON.stringify(obj_result.results);
+                    const uploadBlobResponse = await blockBlobClient.upload(content, Buffer.byteLength(content));
+                    context.log(`Upload ${tickerSymbol} block blob successfully`, uploadBlobResponse.requestId);
+                }else{
+                    if(obj_result.errorcode != '001'){  
+                      context.log(obj_result);
+                    }
+                }
+
+            }catch(err){
               context.log("===================== START HARD ERROR =====================");
-              context.log(err);
-              context.log("===================== END HARD ERROR =====================");
-              // need to handle it here
-            });
-            
-            if(obj_result != undefined){
-              if(obj_result.success){
-                const content = JSON.stringify(obj_result.results);
-                const uploadBlobResponse = await blockBlobClient.upload(content, Buffer.byteLength(content));
-                context.log(`Upload ${tickerSymbol} block blob successfully`, uploadBlobResponse.requestId);
-              }else{
-                context.log(obj_result);    
-              }
+                context.log(err)
+                context.log("===================== END HARD ERROR =====================");
             }
-      
           }else{
             // context.log(`blob ${tickerSymbol} already exists`);
           }
