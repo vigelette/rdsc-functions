@@ -127,10 +127,12 @@ module.exports = async function (context, myQueueItem) {
             if(obj_result.success){
               const content = JSON.stringify(obj_result.results);
               const uploadBlobResponse = await blockBlobClient.upload(content, Buffer.byteLength(content));
-              context.log(`Upload block blob ${blobName} successfully`, uploadBlobResponse.requestId);
+              context.log(`Upload ${tickerSymbol} block blob successfully`, uploadBlobResponse.requestId);
+            }else{
+
             }
           }else{
-            context.log('blob already exists');
+            context.log(`blob ${tickerSymbol} already exists`);
           }
           curr_date = curr_date.add(1,'days');
         }while(curr_date<=end_date);
