@@ -138,6 +138,7 @@ module.exports = async function (context, myQueueItem) {
             }catch(err){
                 context.log("===================== START HARD ERROR =====================");
                 context.log(err)
+                _status = 500;
                 context.log("===================== END HARD ERROR =====================");
             }
           }else{
@@ -155,11 +156,13 @@ module.exports = async function (context, myQueueItem) {
 
     }
     
-    context.log(_responseMessage);
+    context.log("Status: " + _status + "Message: " + _responseMessage);
     let end = moment(new Date(), 'YYYY-MM-DD HH:mm:ss'); 
     let duration = moment.utc(end.diff(start)).format("HH:mm:ss.SSS");
     context.log("execution time: " + duration);
-
-    context.done();
-
+    if(_status == 200){
+      // only complete if 100% no failures
+      context.done();
+    }
+    
 };
