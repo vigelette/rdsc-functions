@@ -121,9 +121,9 @@ module.exports = async function (context, myQueueItem) {
       
           if(!blobExists){
             //context.log('Downloading data for blob');
-            let http_promise = getPromise(context, tickerSymbol, qDate);
-            let response_body = await http_promise;
             try{
+                let http_promise = getPromise(context, tickerSymbol, qDate);
+                let response_body = await http_promise;
                 let obj_result = JSON.parse(response_body);
                 if(obj_result.success){
                     const content = JSON.stringify(obj_result.results);
