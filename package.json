@@ -3,8 +3,12 @@
   "version": "1.0.0",
   "dependencies": {
     "@azure/storage-blob": "^12.3.0",
+    "https": "^1.0.0",
     "dotenv": "^8.2.0",
     "moment": "^2.29.1",
-    "polygon.io": "^1.0.0"
+    "polygon.io": "^1.0.0",
+    "stream": "0.0.2",
+    "util": "^0.12.3",
+    "zlib": "^1.0.5"
   }
 }
