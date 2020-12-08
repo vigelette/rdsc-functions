@@ -60,6 +60,8 @@ function getPromise(context, s, d, c) {
   async function storeAllTickerData(context, blobClient, symbol, day, oldBlobClient, cnt){
     const blobExists = await blobClient.exists();
     const oldBlobExists = (oldBlobClient === null) ? false : await oldBlobClient.exists();
+    let retryCount = 0;
+
     if(!blobExists){
         //context.log('Downloading data for blob');
         if(oldBlobExists){
@@ -82,7 +84,12 @@ function getPromise(context, s, d, c) {
                 if(obj_result.results.length % 50000 === 0){
                     // get last element 
                     const le = obj_result.results[obj_result.results.length-1];
-                    await storeAllTickerData(context, blobClient, symbol, day, oldBlobClient, le.t);  
+                    if(le.t !== undefined){
+                      await storeAllTickerData(context, blobClient, symbol, day, oldBlobClient, le.t);  
+                    }else{                      
+                      context.log(le);
+                      return false
+                    }
                     return true;                  
                 }else{             
                     const content = JSON.stringify(write_data);
@@ -153,6 +160,7 @@ module.exports = async function (context, myQueueItem) {
       // context.log("Creating clients");
       const sharedKeyCredential = new StorageSharedKeyCredential(account, accountKey);
       const rest = polygon.restClient(polygon_apiKey);
+      let retryCount = 0;
 
       // List containers
       const blobServiceClient = new BlobServiceClient(
@@ -190,11 +198,13 @@ module.exports = async function (context, myQueueItem) {
     
         const blockBlobClient = containerClient.getBlockBlobClient(blobName);
         const oldBlockBlobClient = containerClient.getBlockBlobClient(oldBlobName);
+
         const bReturn = await storeAllTickerData(context, blockBlobClient, tickerSymbol, qDate, oldBlockBlobClient, null);
         if(!bReturn){
             // TODO: Log failure
             context.log('Failed to retrieve day');
         }
+
         curr_date = curr_date.add(1,'days');
       }while(curr_date<=end_date);
       
