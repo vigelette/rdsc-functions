@@ -85,7 +85,8 @@ function getPromise(context, s, d, c) {
                     const le = obj_result.results[obj_result.results.length-1];
                     if(le.t !== undefined){
                       write_data = [...write_data, ...obj_result.results];
-                      await storeAllTickerData(context, blobClient, symbol, day, oldBlobClient, le.t);  
+                      const last_timestamp = le.t;
+                      await storeAllTickerData(context, blobClient, symbol, day, oldBlobClient, last_timestamp);  
                     }else if (retryCount<1){            
                       context.log("===================== START ITEM ERROR =====================");          
                       context.log(le);
