@@ -80,18 +80,25 @@ function getPromise(context, s, d, c) {
             let response_body = await http_promise;
             let obj_result = JSON.parse(response_body);
             if(obj_result.success){
-                write_data = [...write_data, ...obj_result.results];
                 if(obj_result.results.length % 50000 === 0){
                     // get last element 
                     const le = obj_result.results[obj_result.results.length-1];
                     if(le.t !== undefined){
+                      write_data = [...write_data, ...obj_result.results];
                       await storeAllTickerData(context, blobClient, symbol, day, oldBlobClient, le.t);  
-                    }else{                      
+                    }else if (retryCount<1){            
+                      context.log("===================== START ITEM ERROR =====================");          
                       context.log(le);
-                      return false
+                      context.log("===================== END ITEM ERROR =====================");
+                      // re-run it
+                      retryCount++;
+                      await storeAllTickerData(context, blobClient, symbol, day, oldBlobClient, cnt);  
+                    }else{
+                      return false;
                     }
                     return true;                  
                 }else{             
+                    write_data = [...write_data, ...obj_result.results];
                     const content = JSON.stringify(write_data);
                     const zipped = await compress(content);
                     const uploadBlobResponse = await blobClient.upload(zipped, Buffer.byteLength(zipped));
